@@ -12,14 +12,19 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Attr;
+import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Text;
 
 /**
  *
@@ -52,16 +57,48 @@ public class XMLCreator extends javax.swing.JFrame {
         else return "";
     }
      
-     private void GenerarXML(){
+     protected void GenerarXML() throws TransformerConfigurationException, TransformerException{
         try {
-        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-        
-         //Elemento raíz
-        Document doc = docBuilder.newDocument();
-        Element rootElement = doc.createElement("agenda");
-        doc.appendChild(rootElement);
-        
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            DOMImplementation implementation = builder.getDOMImplementation();
+            Document document = implementation.createDocument(null, "agenda", null);
+            document.setXmlVersion("1.0");
+            
+            Element raiz = document.getDocumentElement();
+            
+            for (int i=0;i<numero_Persona;i++){
+                //Nodo Persona
+                Element persona = document.createElement("persona");
+                 //Se agrega un atributo al nodo persona y su valor
+                Attr attr_persona = document.createAttribute("genero");
+                attr_persona.setValue(genero.get(i));
+                persona.setAttributeNode(attr_persona);
+                // Nodo Nombre
+                Element nodo_nombre = document.createElement("nombre"); 
+                Text nodo_nombreValue = document.createTextNode(nombre.get(i));
+                nodo_nombre.appendChild(nodo_nombreValue);
+                // Nodo Apellido
+                Element nodo_apellido = document.createElement("apellido"); 
+                Text nodo_apellidoValue = document.createTextNode(apellido.get(i));
+                nodo_apellido.appendChild(nodo_apellidoValue);
+                // Nodo Telefono
+                Element nodo_telefono = document.createElement("telefono"); 
+                Text nodo_telefonoValue = document.createTextNode(telefono.get(i));
+                nodo_telefono.appendChild(nodo_telefonoValue);
+                //Añadimos los nodos nombre,apellido y telefono a persona
+                persona.appendChild(nodo_nombre);
+                persona.appendChild(nodo_apellido);
+                persona.appendChild(nodo_telefono);
+                raiz.appendChild(persona);
+            }
+            
+            //Generate XML
+            Source source = new DOMSource(document);
+            //Indicamos donde lo queremos almacenar
+            Result result = new StreamResult(new java.io.File(this.ruta)); //nombre del archivo
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.transform(source, result);
         } catch (ParserConfigurationException pce) {
             pce.printStackTrace();
         }
@@ -112,7 +149,7 @@ public class XMLCreator extends javax.swing.JFrame {
 
         panelPrincipal.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        panelRuta.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.MatteBorder(null), "SELECCIONA LA RUTA", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
+        panelRuta.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "SELECCIONA LA RUTA", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
 
         textfieldRuta.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
 
@@ -141,7 +178,7 @@ public class XMLCreator extends javax.swing.JFrame {
                 .addGroup(panelRutaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(textfieldRuta)
                     .addComponent(buttonRuta_Cargar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(13, Short.MAX_VALUE))
         );
 
         panelOpciones.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "OPCIONES", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
@@ -321,7 +358,7 @@ public class XMLCreator extends javax.swing.JFrame {
             panelPrincipalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelPrincipalLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(panelRuta, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(panelRuta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelOpciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -348,6 +385,11 @@ public class XMLCreator extends javax.swing.JFrame {
     private void buttonOpciones_GenerarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonOpciones_GenerarActionPerformed
         // Resetea los texfield y checkbox de la seccion datos
         if (numero_Persona == datos){
+            try {
+                GenerarXML();
+            } catch (TransformerException ex) {
+                Logger.getLogger(XMLCreator.class.getName()).log(Level.SEVERE, null, ex);
+            }
             
         } else{
         label_Info.setText("ERROR: El numero de datos introducido no coincide con el numero de personas indicadas");
@@ -385,7 +427,6 @@ public class XMLCreator extends javax.swing.JFrame {
             label_Info.setText("ERROR: Primero hay que introducir la ruta");
         } else{
             label_Info.setText("Fichero listo para introducir datos");
-            GenerarXML();
             this.control_fichero=true;
         }
         
