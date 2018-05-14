@@ -5,7 +5,12 @@
  */
 package XMLCreator;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,9 +51,12 @@ public class XMLCreator extends javax.swing.JFrame {
     int numero_Persona;
     int datos = 0;
     boolean control_fichero = false;
-    
-     
-    
+    FileReader fr = null;
+    FileWriter fw = null;
+    BufferedReader br = null;
+    BufferedWriter bw = null;
+    String raiz1 ="<agenda>"; 
+    String raiz2 ="</agenda>"; 
     
      private static String PillarExtension(String file) {
         
@@ -57,51 +65,40 @@ public class XMLCreator extends javax.swing.JFrame {
         else return "";
     }
      
-     protected void GenerarXML() throws TransformerConfigurationException, TransformerException{
-        try {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            DOMImplementation implementation = builder.getDOMImplementation();
-            Document document = implementation.createDocument(null, "agenda", null);
-            document.setXmlVersion("1.0");
-            
-            Element raiz = document.getDocumentElement();
-            
-            for (int i=0;i<numero_Persona;i++){
-                //Nodo Persona
-                Element persona = document.createElement("persona");
-                 //Se agrega un atributo al nodo persona y su valor
-                Attr attr_persona = document.createAttribute("genero");
-                attr_persona.setValue(genero.get(i));
-                persona.setAttributeNode(attr_persona);
-                // Nodo Nombre
-                Element nodo_nombre = document.createElement("nombre"); 
-                Text nodo_nombreValue = document.createTextNode(nombre.get(i));
-                nodo_nombre.appendChild(nodo_nombreValue);
-                // Nodo Apellido
-                Element nodo_apellido = document.createElement("apellido"); 
-                Text nodo_apellidoValue = document.createTextNode(apellido.get(i));
-                nodo_apellido.appendChild(nodo_apellidoValue);
-                // Nodo Telefono
-                Element nodo_telefono = document.createElement("telefono"); 
-                Text nodo_telefonoValue = document.createTextNode(telefono.get(i));
-                nodo_telefono.appendChild(nodo_telefonoValue);
-                //Añadimos los nodos nombre,apellido y telefono a persona
-                persona.appendChild(nodo_nombre);
-                persona.appendChild(nodo_apellido);
-                persona.appendChild(nodo_telefono);
-                raiz.appendChild(persona);
-            }
-            
-            //Generate XML
-            Source source = new DOMSource(document);
-            //Indicamos donde lo queremos almacenar
-            Result result = new StreamResult(new java.io.File(this.ruta)); //nombre del archivo
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.transform(source, result);
-        } catch (ParserConfigurationException pce) {
-            pce.printStackTrace();
-        }
+     protected void GenerarXML() throws TransformerConfigurationException, TransformerException, IOException{
+       try{
+         br =new BufferedReader(new FileReader(this.ruta));
+         bw = new BufferedWriter(new FileWriter(this.ruta));
+         
+          //Pasa por cada linea de ArrayList y lo guarda en br y muestra por pantalla
+          bw.write(this.raiz1);
+          bw.newLine();
+          for (int x=0;x<numero_Persona;x++){
+              bw.write("\t <persona genero=\""+genero.get(x)+"\">");
+              bw.newLine();
+              bw.write ("\t \t <nombre>"+nombre.get(x)+"</nombre>");
+              bw.newLine();
+              bw.write ("\t \t <apellido>"+apellido.get(x)+"</apellido>");
+              bw.newLine();
+              bw.write ("\t \t <telefono>"+telefono.get(x)+"</telefono>");
+              bw.newLine();
+              bw.write ("\t </persona>");
+              bw.newLine();
+          }
+          bw.write(this.raiz2);
+         //Limpiamos la arrayList para que no se almacene
+         nombre.clear();
+         apellido.clear();
+         genero.clear();
+         telefono.clear();
+         }catch (IOException e) {
+          System.out.println("S'ha trobat un error llegint el fitxer especificat: "+e.getMessage());
+       } finally {
+          if (null!=br) {
+             br.close();
+             bw.close();
+          }
+         }
      }
      
      private void Reset(){
@@ -388,6 +385,8 @@ public class XMLCreator extends javax.swing.JFrame {
             try {
                 GenerarXML();
             } catch (TransformerException ex) {
+                Logger.getLogger(XMLCreator.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
                 Logger.getLogger(XMLCreator.class.getName()).log(Level.SEVERE, null, ex);
             }
             

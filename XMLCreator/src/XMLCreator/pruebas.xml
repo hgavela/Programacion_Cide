@@ -1,13 +1,12 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <agenda>
-    <persona genero="Hombre">
-        <nombre>alex</nombre>
-        <apellido>mixel</apellido>
-        <telefono>4368305834</telefono>
-    </persona>
-    <persona genero="Hombre">
-        <nombre>kk</nombre>
-        <apellido>alberti</apellido>
-        <telefono>798456</telefono>
-    </persona>
+	 <persona genero="Mujer">
+	 	 <nombre>hola</nombre>
+	 	 <apellido>k</apellido>
+	 	 <telefono>ase</telefono>
+	 </persona>
+	 <persona genero="Mujer">
+	 	 <nombre>espi</nombre>
+	 	 <apellido>la</apellido>
+	 	 <telefono>chupa</telefono>
+	 </persona>
 </agenda>
